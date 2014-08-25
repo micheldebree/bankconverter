@@ -4,22 +4,29 @@
 /*global moment*/
 
 $(document).ready(function () {
+    
     'use strict';
+    
     $("a[id=downloadLink]").hide();
 });
 
-function parseData(data, fileName) {
+function parseData(data) {
 
     'use strict';
+    
     var newline = '\n',
         output = '!Type:Bank' + newline,
         sign = '',
-        url = "data:application/octet-stream,",
+      
         account = '';
 
     $.each(data, function (index, value) {
 
-        if (index > 0) {
+        if (index === 0) {
+            if (value[0] !== 'Datum') {
+                throw 'Invalid file format.';
+            }
+        } else {
             
             account = value[2];
             
@@ -50,12 +57,17 @@ function parseData(data, fileName) {
 
     });
     
-    output = '!Account' + newline + 'N' + account + newline + 'TBank' + newline + '^' + newline + output;
+    return '!Account' + newline + 'N' + account + newline + 'TBank' + newline + '^' + newline + output;
+   
+}
+
+function downloadFile(data, fileName) {
     
-    url += encodeURIComponent(output);
+    'use strict';
     
+    var url = "data:application/octet-stream," +  encodeURIComponent(data);
     $("a[id=downloadLink]").attr('href', url);
-    $("a[id=downloadLink]").attr('download', fileName + '.qif');
+    $("a[id=downloadLink]").attr('download', fileName);
     $("a[id=downloadLink]").show();
 }
 
@@ -67,8 +79,22 @@ function uploadFile() {
         config: {
             complete: function (results, file) {
                 console.log("File done: ", file, results);
-                console.log(results.data);
-                parseData(results.data, file.name);
+                var errors = '',
+                    converted;
+                try {
+                    if (results.errors.length > 0) {
+                        $.each(results.errors, function (index, error) {
+                            errors += error.message + '\n';
+                        });
+                        throw 'Could not parse file.';
+                    }
+                    converted = parseData(results.data);
+                    downloadFile(converted, file.name + ".qif");
+                } catch (err) {
+                    errors += err;
+                    $("p[id=errorMessages]").html(errors);
+                    console.log("ERROR: " + errors);
+                }
             }
         },
         complete: function () {
