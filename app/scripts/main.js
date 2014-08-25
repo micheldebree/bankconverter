@@ -3,13 +3,19 @@
 /*global console*/
 /*global moment*/
 
-$(document).ready(function () {
-    
+// Reset view state
+function reset() {
     'use strict';
-    
     $("a[id=downloadLink]").hide();
+    $("p[id=errorMessages]").html('');
+}
+
+$(document).ready(function () {
+    'use strict';
+    reset();
 });
 
+// convert parsed data to QIF format
 function parseData(data) {
 
     'use strict';
@@ -61,6 +67,7 @@ function parseData(data) {
    
 }
 
+// Set data on the downloadlink and click it automatically
 function downloadFile(data, fileName) {
     
     'use strict';
@@ -68,13 +75,18 @@ function downloadFile(data, fileName) {
     var url = "data:application/octet-stream," +  encodeURIComponent(data);
     $("a[id=downloadLink]").attr('href', url);
     $("a[id=downloadLink]").attr('download', fileName);
+    $("a[id=downloadLink]").html(fileName);
     $("a[id=downloadLink]").show();
+    $("a[id=downloadLink]")[0].click();
+    
 }
 
 function uploadFile() {
 
     'use strict';
-
+    
+    reset();
+   
     $("input[type = file]").parse({
         config: {
             complete: function (results, file) {
@@ -89,7 +101,7 @@ function uploadFile() {
                         throw 'Could not parse file.';
                     }
                     converted = parseData(results.data);
-                    downloadFile(converted, file.name + ".qif");
+                    downloadFile(converted, file.name.replace('.csv', '.qif'));
                 } catch (err) {
                     errors += err;
                     $("p[id=errorMessages]").html(errors);

@@ -20,12 +20,14 @@
         <!--[if lt IE 10]>
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
-       
+        
+        <div class="hero-unit">
         <input type="file" name="uploadFile" id="uploadFile" onchange="uploadFile()"/>
-        <a id="downloadLink" href="#">Download</a>
-        
+        <p>
+        <a id="downloadLink" href="#" target="_blank" style="display: none">Download</a>
+        </p>
         <p id="errorMessages" style="color:red"></p>
-        
+        </div>
         <!-- build:js scripts/vendor.js -->
         <!-- bower:js -->
         <script src="../bower_components/jquery/dist/jquery.js"></script>
