@@ -3,7 +3,8 @@
   "private": true,
   "dependencies": {
     "jquery": "~1.11.0",
-    "papa-parse": "~3.0.1"
+    "papa-parse": "~3.0.1",
+    "moment": "~2.8.2"
   },
   "devDependencies": {}
 }
