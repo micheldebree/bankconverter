@@ -14,6 +14,43 @@ $(document).ready(function () {
     reset();
 });
 
+// parse a transaction from one (non header) set of values
+function parseTransaction(values) {
+    
+    'use strict';
+    
+    var transaction = {
+            'date' : moment(values[0], 'YYYYMMDD'),
+            'description' : values[1],
+            'contraAccount' : values[3],
+            'code' : values[4],
+            'debetcredit' : values[5],
+            'amount' : values[6],
+            'transferType' : values[7],
+            'comment' : values[8]
+        };
+    
+     // amount
+    transaction.amount = transaction.amount.replace(',', '.');
+    transaction.sign = (transaction.debetcredit.toLowerCase() === 'af') ? '-' : '';
+    
+    return transaction;
+}
+
+function renderQifTransaction(transaction) {
+    
+    'use strict';
+    
+    var newline = '\n';
+    return 'D' + transaction.date.format('MM/DD/YYYY') + newline
+        + 'T' + transaction.sign + transaction.amount + newline
+        + 'P' + transaction.contraAccount + newline
+        + 'L' + transaction.code + ':' + transaction.transferType + newline
+        + 'M' + transaction.comment + newline
+        + '^' + newline;
+}
+
+
 // convert parsed data to QIF format
 function parseData(data) {
 
@@ -36,30 +73,9 @@ function parseData(data) {
             // next lines contain actual transaction data.
             account = value[2];
             
-            var transaction = {
-                'date' : moment(value[0], 'YYYYMMDD'),
-                'description' : value[1],
-                'contraAccount' : value[3],
-                'code' : value[4],
-                'debetcredit' : value[5],
-                'amount' : value[6],
-                'transferType' : value[7],
-                'comment' : value[8]
-            };
-
-            output += 'D' + transaction.date.format('MM/DD/YYYY') + newline;
-            
-            // amount
-            transaction.amount = transaction.amount.replace(',', '.');
-            sign = (transaction.debetcredit.toLowerCase() === 'af') ? '-' : '';
-        
-            output += 'T' + sign + transaction.amount + newline;
-            output += 'P' + transaction.contraAccount + newline;
-            output += 'L' + transaction.code + ':' + transaction.transferType + newline;
-            output += 'M' + transaction.comment + newline;
-            output += '^' + newline;
+            var transaction = parseTransaction(value);
+            output += renderQifTransaction(transaction);
         }
-
     });
     
     return '!Account' + newline + 'N' + account + newline + 'TBank' + newline + '^' + newline + output;
