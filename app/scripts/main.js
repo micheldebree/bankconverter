@@ -1,4 +1,3 @@
-//$(document).ready(function(){
 /*global $*/
 /*global console*/
 /*global moment*/
@@ -22,42 +21,42 @@ function parseData(data) {
     
     var newline = '\n',
         output = '!Type:Bank' + newline,
-        sign = '',
-      
-        account = '';
+        sign,
+        account;
 
     $.each(data, function (index, value) {
 
+        // first line contains column names. Do a simple check.
         if (index === 0) {
             if (value[0] !== 'Datum') {
                 throw 'Invalid file format.';
             }
         } else {
             
+            // next lines contain actual transaction data.
             account = value[2];
             
-            var transactionDate =  moment(value[0], 'YYYYMMDD'),
-                description = value[1],
-                contraAccount = value[3],
-                code = value[4],
-                debetcredit = value[5],
-                amount = value[6],
-                transferType = value[7],
-                comment = value[8];
+            var transaction = {
+                'date' : moment(value[0], 'YYYYMMDD'),
+                'description' : value[1],
+                'contraAccount' : value[3],
+                'code' : value[4],
+                'debetcredit' : value[5],
+                'amount' : value[6],
+                'transferType' : value[7],
+                'comment' : value[8]
+            };
 
-            output += 'D' + transactionDate.format('MM/DD/YYYY') + newline;
+            output += 'D' + transaction.date.format('MM/DD/YYYY') + newline;
             
             // amount
-            amount = amount.replace(',', '.');
-            sign = '';
-            if (debetcredit.toLowerCase() === 'af') {
-                sign = '-';
-            }
-            
-            output += 'T' + sign + amount + newline;
-            output += 'P' + contraAccount + newline;
-            output += 'L' + code + ':' + transferType + newline;
-            output += 'M' + comment + newline;
+            transaction.amount = transaction.amount.replace(',', '.');
+            sign = (transaction.debetcredit.toLowerCase() === 'af') ? '-' : '';
+        
+            output += 'T' + sign + transaction.amount + newline;
+            output += 'P' + transaction.contraAccount + newline;
+            output += 'L' + transaction.code + ':' + transaction.transferType + newline;
+            output += 'M' + transaction.comment + newline;
             output += '^' + newline;
         }
 
@@ -81,6 +80,7 @@ function downloadFile(data, fileName) {
     
 }
 
+// Parse the file that has been uploaded.
 function uploadFile() {
 
     'use strict';
